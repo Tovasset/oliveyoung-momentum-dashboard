@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>화장품 ODM 4사 · 가동률/캐파/공시 대시보드</title>
+<meta name="description" content="한국콜마·코스맥스·코스메카코리아·씨앤씨인터내셔널 가동률, 생산능력, 설비투자(capex) 추이 및 2023~2026 DART 유형자산취득·양수·시설투자 공시 비교">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#F6F8FA; --surface:#FFFFFF; --surface-2:#FFFFFF; --tint:#EEF1F5;
+  --tp:#15202B; --ts:#3E4A57; --tm:#64707E;
+  --border:#E5E9EF; --border-strong:#D3D9E1;
+  --k:#2D5B8A; --x:#1F7F7F; --m:#C0851A; --c:#6B4E9E; --grid:#EEF1F5;
+  --pink:#B43A6B;
+  --font-sans:'IBM Plex Sans KR',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --fm:'IBM Plex Mono','SFMono-Regular',Menlo,Consolas,monospace;
+  --shadow:0 1px 2px rgba(21,32,43,.04);
+}
+body.dark{
+  --bg:#0F141A; --surface:#19212A; --surface-2:#19212A; --tint:#222B35;
+  --tp:#E9EEF3; --ts:#AAB6C1; --tm:#7C8894;
+  --border:#2A333E; --border-strong:#3A4552;
+  --k:#5B9DD6; --x:#3FB0B0; --m:#D8A542; --c:#9E85CE; --grid:#2A333E;
+  --pink:#D96B98; --shadow:none;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--tp);
+  font-family:var(--font-sans);
+  line-height:1.6;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
+.kcard .v,.tile .v,.hcell .p,table.data td,table.data th{font-family:var(--fm);font-variant-numeric:tabular-nums}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px 64px}
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding:32px 0 20px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.eyebrow{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--tm);margin:0 0 6px}
+h1{font-size:26px;font-weight:600;margin:0;letter-spacing:-.01em}
+.sub{font-size:13px;color:var(--ts);margin:8px 0 0}
+.ctrls{display:flex;gap:8px}
+.btn{font-size:13px;color:var(--ts);background:var(--surface);border:1px solid var(--border-strong);
+  border-radius:8px;padding:7px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s}
+.btn:hover{background:var(--tint);color:var(--tp)}
+.seclab{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--tm);
+  margin:34px 0 12px;font-weight:600}
+.grid{display:grid;gap:14px}
+.kpi{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
+.kcard .l{font-size:12px;color:var(--ts);margin:0 0 8px;display:flex;align-items:center;gap:6px}
+.kcard .v{font-size:25px;font-weight:600;margin:0;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kcard .s{font-size:11.5px;color:var(--tm);margin:5px 0 0}
+.chip{display:inline-block;width:9px;height:9px;border-radius:2px;flex:none}
+.charts2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.chartbox{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px 18px;box-shadow:var(--shadow)}
+.chartbox h3{font-size:15px;font-weight:600;margin:0 0 2px}
+.chartbox .note{font-size:12px;color:var(--tm);margin:6px 0 0;line-height:1.5}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ts);margin:10px 0 6px}
+.legend span{display:flex;align-items:center;gap:6px}
+.cwrap{position:relative;width:100%;height:270px}
+.cwrap.sm{height:240px}
+table.data{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+table.data th,table.data td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--border)}
+table.data th:first-child,table.data td:first-child{text-align:left}
+table.data thead th{color:var(--ts);font-weight:600;font-size:11.5px;border-bottom:1.5px solid var(--border-strong)}
+table.data tbody tr:hover{background:var(--surface-2)}
+table.data .grp{font-weight:600;color:var(--tp)}
+table.data .mut{color:var(--tm);font-size:11px}
+.heat{display:grid;grid-template-columns:110px repeat(3,1fr);gap:7px;align-items:stretch}
+.heat .hh{font-size:12px;color:var(--ts);text-align:center;align-self:end;padding-bottom:4px}
+.heat .rl{font-size:13px;display:flex;align-items:center;gap:7px}
+.hcell{border-radius:9px;padding:12px 6px;text-align:center}
+.hcell .p{font-size:16px;font-weight:600;margin:0;font-variant-numeric:tabular-nums;color:var(--tp)}
+.hcell .n{font-size:10.5px;color:var(--ts);margin:2px 0 0}
+.tlrow{display:grid;grid-template-columns:66px 1fr;gap:14px;padding:11px 0;border-top:1px solid var(--border)}
+.tlrow:last-child{border-bottom:1px solid var(--border)}
+.tldate{font-size:12px;color:var(--tm);font-variant-numeric:tabular-nums;padding-top:1px}
+.tlbody{font-size:13.5px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tlbody b{font-weight:600}
+.pill{font-size:11px;padding:3px 10px;border-radius:20px;white-space:nowrap;font-weight:500}
+.p-capa{background:rgba(27,175,122,.15);color:#0F6E56}
+.p-drug{background:rgba(186,117,23,.16);color:#854F0B}
+.p-non{background:rgba(120,119,113,.16);color:#54534E}
+.p-str{background:rgba(139,63,212,.15);color:#5B2A9E}
+body.dark .p-capa{color:#5DCAA5}body.dark .p-drug{color:#EF9F27}body.dark .p-non{color:#B4B2A9}body.dark .p-str{color:#C9A7F0}
+.ccards{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.cc h4{font-size:14px;font-weight:600;margin:0 0 8px;display:flex;align-items:center;gap:7px}
+.cc p{font-size:12.5px;color:var(--ts);margin:0;line-height:1.6}
+footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--border);font-size:12px;color:var(--tm);line-height:1.7}
+footer b{color:var(--ts);font-weight:600}
+a{color:var(--k);text-decoration:none}
+@media print{.ctrls{display:none}body{background:#fff}.card,.chartbox{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <p class="eyebrow">올리브영 ODM 대시보드 · 제조사 심화</p>
+    <h1>가동률 · 캐파 증설 · 투자공시 대시보드</h1>
+    <p class="sub">한국콜마 (161890) · 코스맥스 (192820) · 코스메카코리아 (241710) · 씨앤씨인터내셔널 (352480) &nbsp;|&nbsp; FY2025 사업보고서 + 1Q26 분기보고서 + DART 수시공시(’23~’26) · 연결기준</p>
+  </div>
+  <div class="ctrls">
+    <a class="btn" href="index.html">← 메인 대시보드</a>
+    <button class="btn" id="themeBtn" onclick="toggleTheme()">◐ 다크</button>
+    <button class="btn" onclick="window.print()">⎙ 인쇄</button>
+  </div>
+</header>
+
+<div class="seclab">핵심 지표 — 국내 화장품 가동률 (FY2025)</div>
+<div class="grid kpi">
+  <div class="card kcard"><p class="l"><span class="chip" style="background:var(--k)"></span>한국콜마㈜ <span style="margin-left:auto;font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(45,91,138,.14);color:var(--k);font-weight:500">공시</span></p><p class="v">76.8%</p><p class="s">공시 · 역대최고 96.6%(’23) · 1Q26 77.9%</p></div>
+  <div class="card kcard"><p class="l"><span class="chip" style="background:var(--x)"></span>코스맥스㈜ <span style="margin-left:auto;font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(120,119,113,.16);color:var(--tm);font-weight:500">명목·참고</span></p><p class="v">57.9%</p><p class="s">미공시 · 역대최고 67.2%(’24) · 1Q26 ~68%</p></div>
+  <div class="card kcard"><p class="l"><span class="chip" style="background:var(--c)"></span>씨앤씨(국내) <span style="margin-left:auto;font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(120,119,113,.16);color:var(--tm);font-weight:500">명목·참고</span></p><p class="v">53.7%</p><p class="s">미공시·1교대기준 · 역대최고 56.9%(’24) · 1Q26 48%</p></div>
+  <div class="card kcard"><p class="l"><span class="chip" style="background:var(--m)"></span>코스메카(한국) <span style="margin-left:auto;font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(120,119,113,.16);color:var(--tm);font-weight:500">명목·참고</span></p><p class="v">27.5% <span style="font-size:13px;color:var(--ts);font-weight:400">(1교대 ~55%)</span></p><p class="s">주야2교대 기준 · 기초 25%/색조 39% 가중평균 · 1Q26 31.6%</p></div>
+</div>
+
+<div class="seclab">핵심 지표 — 2026년 생산·설비 신규 투자공시</div>
+<div class="grid kpi">
+  <div class="card kcard"><p class="l">한국콜마 · 이노엔 오송</p><p class="v">970억</p><p class="s">’26.05 · 의약품(제약) 증설</p></div>
+  <div class="card kcard"><p class="l">씨앤씨 · 청주 신축</p><p class="v">790억</p><p class="s">’26.02 · 생산CAPA 확대 · 자기자본 22.5%</p></div>
+  <div class="card kcard"><p class="l">코스메카 · 오창 양수</p><p class="v">640억</p><p class="s">’26.06 · 토지+건물 · 생산능력↑</p></div>
+  <div class="card kcard"><p class="l">코스맥스 · 평택 증축</p><p class="v">605억</p><p class="s">’26.05 · 생산능력 확충 · ’26.10 완료</p></div>
+</div>
+
+<div class="seclab">가동률 추이 (국내 본체, 2023→2025)</div>
+<div class="chartbox">
+  <div class="legend">
+    <span><span class="chip" style="background:var(--k)"></span>한국콜마㈜</span>
+    <span><span class="chip" style="background:var(--x)"></span>코스맥스㈜</span>
+    <span><span class="chip" style="background:var(--m)"></span>코스메카(한국)</span>
+    <span><span class="chip" style="background:var(--c)"></span>씨앤씨(국내)</span>
+  </div>
+  <div class="cwrap"><canvas id="utilChart" role="img" aria-label="국내 가동률 추이 2023-2025. 한국콜마 96.6→76.8, 코스맥스 62.2→57.9, 코스메카 27.9→27.5, 씨앤씨 53.1→53.7"></canvas></div>
+  <p class="note">한국콜마만 사업보고서에 가동률 %를 명시. 코스맥스·코스메카·씨앤씨는 미공시 → 생산실적÷생산능력으로 자체 산출. 각사가 <b style="color:var(--ts)">생산능력(분모)을 잡는 기준이 달라</b>(콜마·코스맥스·씨앤씨는 ‘1일 8시간’ 명시 — 단 씨앤씨는 1교대, 코스메카는 시간 미기재) 회사 간 절대수치 직접비교는 부적절, 각사 추세로 해석할 것. → 아래 참고.</p>
+</div>
+
+<div class="card" style="margin-top:14px;border-color:var(--m)">
+  <div style="font-size:14px;font-weight:600;margin-bottom:8px"><span class="chip" style="background:var(--m);display:inline-block;margin-right:7px"></span>왜 코스메카 %만 유독 낮은가 — ‘교대수’가 아니라 능력 ‘정의’의 차이</div>
+  <p style="font-size:13px;color:var(--ts);margin:0 0 12px;line-height:1.65">네 회사 모두 2교대 이상으로 가동(콜마 2조2교대·코스맥스 3교대·코스메카 주야2교대·씨앤씨 1교대) → <b style="color:var(--tp)">교대수는 차이의 이유가 아님</b>. 진짜 차이는 각사가 분모(생산능력)를 얼마나 넓게 잡느냐 — 콜마·코스맥스·씨앤씨는 ‘8시간’을 명시하지만 코스메카는 시간 기준 없이 능력을 크게 잡음. 역대 도달했던 최고치가 그 증거:</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px">
+    <div style="background:var(--surface-2);border-radius:9px;padding:11px 13px"><div style="font-size:11.5px;color:var(--ts)">한국콜마</div><div style="font-size:19px;font-weight:600">96.6%</div><div style="font-size:11px;color:var(--tm)">2023 최고</div></div>
+    <div style="background:var(--surface-2);border-radius:9px;padding:11px 13px"><div style="font-size:11.5px;color:var(--ts)">코스맥스</div><div style="font-size:19px;font-weight:600">67.2%</div><div style="font-size:11px;color:var(--tm)">2024 최고</div></div>
+    <div style="background:var(--surface-2);border-radius:9px;padding:11px 13px"><div style="font-size:11.5px;color:var(--ts)">씨앤씨</div><div style="font-size:19px;font-weight:600">56.9%</div><div style="font-size:11px;color:var(--tm)">2024 최고</div></div>
+    <div style="background:var(--surface-2);border-radius:9px;padding:11px 13px"><div style="font-size:11.5px;color:var(--ts)">코스메카</div><div style="font-size:19px;font-weight:600">35.9%</div><div style="font-size:11px;color:var(--tm)">2024 최고</div></div>
+  </div>
+  <p style="font-size:12px;color:var(--tm);margin:11px 0 0;line-height:1.55">코스메카는 아무리 풀가동해도 명목 <b style="color:var(--ts)">36%를 넘은 적이 없음</b> = 능력을 이론적(nameplate)으로 넓게 잡았다는 증거. 씨앤씨는 가장 보수적인 1교대 기준인데도 57%(용인 신공장 램프업이 끌어내림). 따라서 % 직접비교는 무의미, 각사 자기 추세로만 볼 것. 결정적 방증: 코스메카는 명목 27%인데 <b style="color:var(--ts)">640억 오창 인수</b> + 물량 -1.7%에도 매출 +22%(개당단가 +24%) 프리미엄화 → 실질 캐파는 타이트.</p>
+</div>
+
+<div class="grid charts2" style="margin-top:14px">
+  <div class="chartbox">
+    <h3>생산능력(캐파) 추이 <span style="font-size:12px;color:var(--tm);font-weight:400">· 국내, 백만개</span></h3>
+    <div class="legend">
+      <span><span class="chip" style="background:var(--k)"></span>한국콜마</span>
+      <span><span class="chip" style="background:var(--x)"></span>코스맥스</span>
+      <span><span class="chip" style="background:var(--m)"></span>코스메카</span>
+      <span><span class="chip" style="background:var(--c)"></span>씨앤씨</span>
+    </div>
+    <div class="cwrap sm"><canvas id="capaChart" role="img" aria-label="국내 생산능력 백만개. 코스맥스 650→1021, 한국콜마 373→632, 코스메카 440→522, 씨앤씨 209→281"></canvas></div>
+    <p class="note">국내 3년 증가율 — 코스맥스 +57%, 한국콜마 +70%, 씨앤씨 +34%, 코스메카 +19%.</p>
+  </div>
+  <div class="chartbox">
+    <h3>설비투자 capex 추이 <span style="font-size:12px;color:var(--tm);font-weight:400">· 억원, 연결 유형자산 취득</span></h3>
+    <div class="legend">
+      <span><span class="chip" style="background:var(--k)"></span>한국콜마</span>
+      <span><span class="chip" style="background:var(--x)"></span>코스맥스</span>
+      <span><span class="chip" style="background:var(--m)"></span>코스메카</span>
+      <span><span class="chip" style="background:var(--c)"></span>씨앤씨</span>
+    </div>
+    <div class="cwrap sm"><canvas id="capexChart" role="img" aria-label="연결 유형자산 취득 억원. 한국콜마 1068→1640, 코스맥스 863→1870, 코스메카 186→614, 씨앤씨 192→152"></canvas></div>
+    <p class="note">코스맥스만 지속 우상향. 씨앤씨는 ’24 용인공장에 피크(343억) 후 ’25 감소 — 청주(790억)는 ’26부터 반영.</p>
+  </div>
+</div>
+
+<div class="seclab">매출 기준 캐파 효율 — 개수 정의 문제를 우회한 원화 비교</div>
+<div class="grid charts2">
+  <div class="chartbox">
+    <h3>유형자산 회전율 <span style="font-size:12px;color:var(--tm);font-weight:400">· 매출÷유형자산, 배</span></h3>
+    <div class="legend">
+      <span><span class="chip" style="background:var(--k)"></span>한국콜마</span>
+      <span><span class="chip" style="background:var(--x)"></span>코스맥스</span>
+      <span><span class="chip" style="background:var(--m)"></span>코스메카</span>
+      <span><span class="chip" style="background:var(--c)"></span>씨앤씨</span>
+    </div>
+    <div class="cwrap sm"><canvas id="turnoverChart" role="img" aria-label="유형자산 회전율 배. 한국콜마 3.3→3.1, 코스맥스 3.25→2.59, 코스메카 3.07→2.68, 씨앤씨 2.49→2.35"></canvas></div>
+    <p class="note">원화 기준(개수 정의 무관, 기말 유형자산). 높을수록 자산을 매출로 잘 소진(타이트). ’25 콜마 3.1 &gt; 코스메카 2.7 ≈ 코스맥스 2.6 &gt; 씨앤씨 2.4. 4사 모두 하락 = 선투자 국면.</p>
+  </div>
+  <div class="chartbox">
+    <h3>매출 vs 유형자산 성장 <span style="font-size:12px;color:var(--tm);font-weight:400">· 2023→2025 누적, %</span></h3>
+    <div class="legend">
+      <span><span class="chip" style="background:#2D5B8A"></span>매출 성장</span>
+      <span><span class="chip" style="background:#C0851A"></span>유형자산 성장</span>
+    </div>
+    <div class="cwrap sm"><canvas id="growthChart" role="img" aria-label="2023-2025 매출성장 vs 유형자산성장. 콜마 27 vs 37, 코스맥스 35 vs 69, 코스메카 36 vs 56, 씨앤씨 31 vs 39"></canvas></div>
+    <p class="note">모든 회사가 자산을 매출보다 빨리 늘림(=선투자). 격차 최대 코스맥스(+35% vs +69%). 씨앤씨는 청주 790억이 ’26부터 반영 예정.</p>
+  </div>
+</div>
+<div class="card" style="margin-top:14px;border-color:var(--x)">
+  <p style="font-size:13px;color:var(--ts);margin:0;line-height:1.65"><b style="color:var(--tp)">핵심 재확인</b> — 개수 기준 가동률로는 코스메카가 27%로 꼴찌였지만, 원화(자산효율)로는 <b style="color:var(--tp)">코스메카 2.68배로 코스맥스(2.59)와 대등하고 씨앤씨(2.35)보다 높음</b>. “코스메카 27%”는 능력을 개수로 넓게 잡은 착시였음을 원화 지표가 재확인. 4사 공통으로 매출보다 자산이 빨리 늘어(회전율 하락) K뷰티 ODM 전반이 <b style="color:var(--tp)">캐파 선(先)투자</b> 국면임을 보여줌.</p>
+</div>
+
+<div class="seclab">매출 대비 — 재고자산 회전율 &amp; 충당부채율</div>
+<div class="grid charts2">
+  <div class="chartbox">
+    <h3>재고자산 회전율 <span style="font-size:12px;color:var(--tm);font-weight:400">· 매출÷재고, 배</span></h3>
+    <div class="legend">
+      <span><span class="chip" style="background:var(--k)"></span>한국콜마</span>
+      <span><span class="chip" style="background:var(--x)"></span>코스맥스</span>
+      <span><span class="chip" style="background:var(--m)"></span>코스메카</span>
+      <span><span class="chip" style="background:var(--c)"></span>씨앤씨</span>
+    </div>
+    <div class="cwrap sm"><canvas id="invturnChart" role="img" aria-label="재고자산 회전율 배 2023-2025. 씨앤씨 9.9 최고, 코스맥스 8.9, 한국콜마 8.6, 코스메카 8.1"></canvas></div>
+    <p class="note">높을수록 재고가 가볍고 잘 팔림(회전 빠름). 4사 모두 ’25 개선(7~10배). 씨앤씨 9.9배 최고(색조 수주생산=재고 가벼움), 코스메카 8.1배로 상대적 무거움. 재고÷매출로는 10~12% 수준으로 유사.</p>
+  </div>
+  <div class="chartbox">
+    <h3>충당부채율 <span style="font-size:12px;color:var(--tm);font-weight:400">· 충당부채÷매출, % · FY2025</span></h3>
+    <div class="legend">
+      <span><span class="chip" style="background:var(--k)"></span>한국콜마</span>
+      <span><span class="chip" style="background:var(--x)"></span>코스맥스</span>
+      <span><span class="chip" style="background:var(--m)"></span>코스메카</span>
+      <span><span class="chip" style="background:var(--c)"></span>씨앤씨</span>
+    </div>
+    <div class="cwrap sm"><canvas id="provChart" role="img" aria-label="충당부채율 % FY2025. 코스맥스 0.39, 코스메카 0.16, 한국콜마 0.15, 씨앤씨 0.01"></canvas></div>
+    <p class="note">코스맥스 0.39%로 최고(판매보증충당 94억) &gt; 코스메카 0.16% ≈ 콜마 0.15% &gt; 씨앤씨 0.01%. 4사 모두 &lt;0.4%로 미미 — B2B 수주생산이라 반품·보증 리스크가 브랜드사 대비 작음. 분류기준 상이(코스맥스=판매보증 위주, 콜마=유동+비유동 합산).</p>
+  </div>
+</div>
+
+<div class="seclab">재고 건전성 — 재고자산 평가충당금 비율 (FY2025)</div>
+<div class="chartbox">
+  <div class="cwrap sm"><canvas id="invAllowChart" role="img" aria-label="재고자산 평가충당금 비율 FY2025. 코스메카 12.8 최고, 한국콜마 9.3, 코스맥스 4.8, 씨앤씨 1.5 추정"></canvas></div>
+  <p class="note">평가충당금÷취득원가. 높을수록 체화재고가 많거나 보수적 평가. <b style="color:var(--ts)">코스메카 12.8%로 4사 최고</b>(원재료 13%·부재료 19% — 자외선차단제 등 특화 원부자재를 쌓아두고 보수적 평가). 한국콜마 9.3%는 이노엔 제약 재고 write-down 포함. <b style="color:var(--ts)">코스맥스 4.8%로 가장 건전</b>. 씨앤씨는 1년초과 체화재고가 3.3억뿐이라 미미(별도표가 이미지라 정확수치 미검출·추정). <b style="color:var(--ts)">→ 이 지표는 코스메카에 불리(강점 아닌 주의점)</b>.</p>
+</div>
+
+<div class="seclab">R&D 투자 비율 — 연구개발비 ÷ 매출</div>
+<div class="grid charts2">
+  <div class="chartbox">
+    <h3>R&D 비율 추이 <span style="font-size:12px;color:var(--tm);font-weight:400">· 공시(그룹) 기준, %</span></h3>
+    <div class="legend">
+      <span><span class="chip" style="background:var(--k)"></span>한국콜마</span>
+      <span><span class="chip" style="background:var(--x)"></span>코스맥스</span>
+      <span><span class="chip" style="background:var(--m)"></span>코스메카</span>
+      <span><span class="chip" style="background:var(--c)"></span>씨앤씨</span>
+    </div>
+    <div class="cwrap sm"><canvas id="rndChart" role="img" aria-label="R&D 매출대비 비율 % 2023-2025. 한국콜마 5.8→5.6, 코스맥스 5.2→5.7, 코스메카 2.8→2.6, 씨앤씨 1.9→1.7"></canvas></div>
+    <p class="note">공시(그룹 단순합산): 코스맥스 5.7%·한국콜마 5.6% &gt;&gt; 코스메카 2.6%·씨앤씨 1.7%. 절대액 콜마 1,553억·코스맥스 1,367억·코스메카 169억·씨앤씨 48억.</p>
+  </div>
+  <div class="chartbox">
+    <h3>화장품 순수 R&D 비율 <span style="font-size:12px;color:var(--tm);font-weight:400">· FY2025, 이노엔 제외 보정</span></h3>
+    <div class="cwrap sm"><canvas id="rndAdjChart" role="img" aria-label="화장품 순수 R&D 비율 FY2025. 코스맥스 5.7, 한국콜마 4.0(보정), 코스메카 2.6, 씨앤씨 1.7"></canvas></div>
+    <p class="note">한국콜마는 이노엔(제약) 제외 시 5.58% → <b style="color:var(--ts)">~4.0%</b>. 순수 화장품 R&D 1위는 <b style="color:var(--ts)">코스맥스(5.7%)</b>. 코스메카·씨앤씨는 연결≈별도라 그대로.</p>
+  </div>
+</div>
+<div class="card" style="margin-top:14px;border-color:var(--x)">
+  <p style="font-size:13px;color:var(--ts);margin:0;line-height:1.65"><b style="color:var(--tp)">개별(화장품 순수) R&D 비율</b> — 한국콜마 그룹 R&D 1,553억에서 이노엔 제약 859억을 빼면 비(非)제약 R&D 694억, 비제약 매출 1.72조 → <b style="color:var(--tp)">~4.0%</b>. 보정 순위: <b style="color:var(--tp)">코스맥스 5.7% &gt; 한국콜마 ~4.0% &gt; 코스메카 2.6% &gt; 씨앤씨 1.7%</b> (코스맥스가 순수 화장품 R&D 1위). 참고 — 별도(개별) 재무제표 <b>판관비</b>의 ‘연구개발비’ 라인은 콜마 0.43%·코스맥스 0.15%로 나오지만, ODM은 R&D(제형개발·시험생산)를 대부분 <b>매출원가</b>에 넣어 이 라인엔 극히 일부만 잡히므로 R&D 강도로 쓸 수 없음. 유효한 지표는 각사 ‘연구개발활동’의 연구개발비용 총계.</p>
+</div>
+
+<div class="seclab">수익성 — 영업이익률 (OPM)</div>
+<div class="chartbox">
+  <div class="legend">
+    <span><span class="chip" style="background:var(--k)"></span>한국콜마</span>
+    <span><span class="chip" style="background:var(--x)"></span>코스맥스</span>
+    <span><span class="chip" style="background:var(--m)"></span>코스메카</span>
+    <span><span class="chip" style="background:var(--c)"></span>씨앤씨</span>
+  </div>
+  <div class="cwrap"><canvas id="opmChart" role="img" aria-label="영업이익률 % 2023-2025. 코스메카 10.4→13.0 최고, 씨앤씨 14.6→7.7 급락, 한국콜마 6.3→8.8, 코스맥스 6.5→8.2"></canvas></div>
+  <p class="note">차트=연간 추이+최신 1Q26(연결). <b style="color:var(--ts)">1Q26: 코스메카 11.8% &gt; 한국콜마 10.8% &gt; 코스맥스 7.8% &gt; 씨앤씨 4.2%</b>. 코스메카는 13.0%(FY25)→11.8%로 <b style="color:var(--ts)">소폭 하락</b>(잉글우드랩 미국 약세)해 한국콜마와 격차 축소 — 여전히 1위지만 지켜볼 지점. 씨앤씨는 ’23년 14.6%→4.2%로 급락(신공장·색조 경쟁). (아래 비용구조는 FY2025, 별도vs연결은 1Q26 기준.)</p>
+</div>
+<div class="card" style="margin-top:14px;border-color:var(--m)">
+  <p style="font-size:13px;color:var(--ts);margin:0;line-height:1.65"><b style="color:var(--tp)">왜 코스메카 수익성이 1위인가</b> — ① <b style="color:var(--tp)">선케어·기능성 프리미엄 믹스</b>: ’25 물량 -1.7%인데 매출 +22%, 개당단가 +24%(주력 원재료 1위가 자외선차단제 TINOSORB=선케어 집중, 고마진). ② <b style="color:var(--tp)">미국 잉글우드랩 흑자전환</b>(순이익 흑자, 미국 가동률 34→42%)으로 해외 적자부담 해소. ③ <b style="color:var(--tp)">경쟁사 대비 저마진 노출 작음</b> — 코스맥스는 중국 저가경쟁+미국 자본투입(2,579억), 한국콜마는 제약(이노엔) 희석, 씨앤씨는 색조 단일+신공장 초기비용. 규모(매출)는 4사 중 작아도 <b style="color:var(--tp)">고부가 집중으로 마진 최고</b>.</p>
+</div>
+
+<div class="seclab">비용 구조 분석 — 왜 코스메카 마진이 높은가 (비용의 성격별)</div>
+<div class="grid charts2">
+  <div class="chartbox">
+    <h3>비용 구조 <span style="font-size:12px;color:var(--tm);font-weight:400">· 연결, 매출=100%</span></h3>
+    <div class="legend">
+      <span><span class="chip" style="background:#9AA4B0"></span>원재료</span>
+      <span><span class="chip" style="background:#C0851A"></span>인건비</span>
+      <span><span class="chip" style="background:#D3D9E1"></span>기타</span>
+      <span><span class="chip" style="background:#117A52"></span>영업이익</span>
+    </div>
+    <div class="cwrap sm"><canvas id="costStructChart" role="img" aria-label="연결 비용구조 매출100%. 코스메카 원재료51 인건11 기타25 영업13, 씨앤씨 인건28.5 영업7.7"></canvas></div>
+    <p class="note">코스메카 총원가율 87%로 최저 → 영업이익(초록) 최대. <b style="color:var(--ts)">씨앤씨는 인건비(주황) 28.5%로 압도적</b>(색조=노동집약). 원재료율은 49~54%로 유사 — 마진 차이는 인건·해외구조에서 나옴.</p>
+  </div>
+  <div class="chartbox">
+    <h3>영업이익률: 별도 vs 연결 <span style="font-size:12px;color:var(--tm);font-weight:400">· 1Q26 · 자회사/해외 효과</span></h3>
+    <div class="legend">
+      <span><span class="chip" style="background:#9AA4B0"></span>별도(국내)</span>
+      <span><span class="chip" style="background:#117A52"></span>연결</span>
+    </div>
+    <div class="cwrap sm"><canvas id="opmSepChart" role="img" aria-label="영업이익률 별도vs연결. 코스메카 10.9→13.0 상승, 한국콜마 12.5→8.8 하락, 코스맥스 10.1→8.2 하락, 씨앤씨 4.9→7.7"></canvas></div>
+    <p class="note">1Q26 — <b style="color:var(--ts)">국내 본체(별도)는 한국콜마㈜ 14.9%로 최고</b> &gt; 코스메카 12.5% &gt; 코스맥스 9.0% &gt; 씨앤씨 1.8%. 연결로 가면 자회사가 희석: 코스메카 12.5→11.8(★미국 잉글우드랩이 FY25 +2.1%p→1Q26 −0.7%p로 <b style="color:var(--ts)">반전</b>=미국 약세), 한국콜마 14.9→10.8(제약), 코스맥스 9.0→7.8(중국). 씨앤씨만 1.8→4.2 상승(상해·임대).</p>
+  </div>
+</div>
+<div class="card" style="margin-top:14px;border-color:var(--m)">
+  <p style="font-size:13px;color:var(--ts);margin:0;line-height:1.65"><b style="color:var(--tp)">결론 — 코스메카 수익성 1위의 본질</b>: ① <b style="color:var(--tp)">인건비율 최저</b>(11% vs 씨앤씨 28%·코스맥스 15%) — 프리미엄 ASP+외주가공 활용으로 인력 슬림. ② <b style="color:var(--tp)">깨끗한 사업구조</b> — 미국 잉글우드랩(흑자)이 마진을 +2%p 올림, 저마진 제약이나 적자 중국사업이 없음. 반전: 국내 화장품 본체(별도)만 보면 한국콜마㈜가 12.5%로 최고 — 코스메카의 연결 1위는 “원가”가 아니라 “구조”의 승리.</p>
+</div>
+
+<div class="seclab">인당 매출 (별도·국내, 1Q26 분기)</div>
+<div class="chartbox">
+  <div class="cwrap sm"><canvas id="revHeadChart" role="img" aria-label="인당 매출 별도 1Q26 백만원. 코스맥스 270, 코스메카 258, 한국콜마 222, 씨앤씨 96"></canvas></div>
+  <p class="note">1Q26 별도매출÷직원수(백만원/인·분기). <b style="color:var(--ts)">코스맥스 270·코스메카 258로 최상위</b>(자동화·외주로 인력 슬림), <b style="color:var(--ts)">씨앤씨 96으로 최저</b>(색조 노동집약=인건비율 28%와 일치). 코스메카는 직원 552명(4사 최소, 외주 활용)으로 매출 1,422억 → 인당 생산성 최상위권. 연환산 코스맥스 10.8·코스메카 10.3·콜마 8.9·씨앤씨 3.85억/인. 직원수=코스메카 1Q26·나머지 2025말(분기보고서 미기재). ※연결 기준은 해외 저임금 인력(코스맥스 중국·콜마 이노엔)으로 왜곡 → 별도가 생산성 비교에 적합.</p>
+</div>
+
+<div class="seclab">코스메카 재료 재고 — 과거 대비 (연결, 매출 대비)</div>
+<div class="chartbox">
+  <div class="legend">
+    <span><span class="chip" style="background:#C0851A"></span>재료(원+부재료)/매출</span>
+    <span><span class="chip" style="background:#9AA4B0"></span>원재료/매출</span>
+  </div>
+  <div class="cwrap sm"><canvas id="meccaMatChart" role="img" aria-label="코스메카 재료재고/매출 비율. 재료 12.8에서 8.3으로, 원재료 7.0에서 4.7로 감소"></canvas></div>
+  <p class="note"><b style="color:var(--ts)">연결(미국 잉글우드랩 포함) 기준</b> — 재료/매출 12.8%(’21)→8.3%(’25) 감소(효율 개선). 원재료 대부분(연결 299억 중 본사 66억 외 233억)이 미국에 있어 연결 총량은 평탄. <b style="color:var(--ts)">단 본사(별도)만 보면 원재료·부재료를 꾸준히 늘려왔음 → 아래 분기별 참고</b>(연결 평탄이 본사 증가를 가림).</p>
+</div>
+
+<div class="seclab">코스메카 본사 원재료·부재료 — 분기별 (별도, 억원)</div>
+<div class="chartbox">
+  <div class="legend">
+    <span><span class="chip" style="background:#9AA4B0"></span>원재료</span>
+    <span><span class="chip" style="background:#C0851A"></span>부재료</span>
+  </div>
+  <div class="cwrap sm"><canvas id="meccaQChart" role="img" aria-label="코스메카 본사 원재료+부재료 분기별. 1Q25 139억에서 1Q26 255억으로 증가"></canvas></div>
+  <p class="note"><b style="color:var(--ts)">본사는 실제로 재료를 쌓아왔음.</b> 원+부재료 139억(1Q25)→255억(1Q26) = <b style="color:var(--ts)">+83% YoY, 직전분기 +36%</b>. 원재료 54→93억(+73%), 부재료 85→161억(+89%). 선케어 성수기·매출성장 대비 원료 선확보로 보이나, 재고충당비율 12.8%(4사 최고)와 함께 <b style="color:var(--ts)">축적 속도는 지켜볼 점</b>. (취득원가 기준)</p>
+</div>
+
+<div class="seclab">코스메카 투자 포인트 — 경쟁사 대비</div>
+<div class="card" style="border:2px solid var(--m)">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+    <div>
+      <div style="font-size:13px;font-weight:600;color:var(--x);margin-bottom:8px"><i class="ti ti-circle-check" style="font-size:15px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>강점 (경쟁사보다 나은 것)</div>
+      <ul style="margin:0;padding-left:18px;font-size:12.5px;color:var(--ts);line-height:1.7">
+        <li><b style="color:var(--tp)">수익성 1위</b> — 영업이익률 13.0%·순이익률 9.0% (2위 대비 1.5배)</li>
+        <li><b style="color:var(--tp)">성장성 1위</b> — 매출 +22% YoY (경쟁사 +2~11%)</li>
+        <li><b style="color:var(--tp)">미국 잉글우드랩 흑자</b> (콜마·코스맥스 미국은 부진)</li>
+        <li><b style="color:var(--tp)">저부채 고마진</b> — 부채비율 88%로 코스맥스(200%대)보다 건전</li>
+        <li>선케어·기능성 프리미엄 집중 → "작지만 알짜"</li>
+      </ul>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:600;color:var(--tm);margin-bottom:8px"><i class="ti ti-alert-triangle" style="font-size:15px;vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>주의점 (약하거나 착시)</div>
+      <ul style="margin:0;padding-left:18px;font-size:12.5px;color:var(--ts);line-height:1.7">
+        <li><b style="color:var(--tp)">재고충당비율 12.8%로 최고</b> — 원부자재 체화·보수적 평가</li>
+        <li>부채비율 상승세(오창 640억 투자로 더 오를 수 있음)</li>
+        <li>ROE 17.2%는 2위 — 단 코스맥스 21%는 레버리지 효과</li>
+        <li>매출규모·R&D비율·명목가동률 최저 = <b style="color:var(--tp)">규모 지표 착시</b>(효율·마진은 최고)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="seclab">지역별 가동률 (FY2025)</div>
+<div class="card">
+  <div class="heat">
+    <div></div>
+    <div class="hh">국내</div><div class="hh">중국</div><div class="hh">미국</div>
+    <div class="rl"><span class="chip" style="background:var(--k)"></span>한국콜마</div>
+    <div class="hcell" style="background:rgba(45,91,138,.42)"><p class="p">76.8%</p></div>
+    <div class="hcell" style="background:rgba(45,91,138,.24)"><p class="p">46.0%</p><p class="n">무석</p></div>
+    <div class="hcell" style="background:rgba(45,91,138,.07)"><p class="p">12.0%</p></div>
+    <div class="rl"><span class="chip" style="background:var(--x)"></span>코스맥스</div>
+    <div class="hcell" style="background:rgba(45,91,138,.30)"><p class="p">57.9%</p></div>
+    <div class="hcell" style="background:rgba(45,91,138,.31)"><p class="p">59.3%</p><p class="n">상해</p></div>
+    <div class="hcell" style="background:rgba(45,91,138,.26)"><p class="p">49.8%</p></div>
+    <div class="rl"><span class="chip" style="background:var(--c)"></span>씨앤씨</div>
+    <div class="hcell" style="background:rgba(45,91,138,.28)"><p class="p">53.7%</p></div>
+    <div class="hcell" style="background:rgba(45,91,138,.32)"><p class="p">61.8%</p><p class="n">상해</p></div>
+    <div class="hcell" style="background:rgba(120,119,113,.10)"><p class="p" style="color:var(--tm)">—</p><p class="n">공장없음</p></div>
+    <div class="rl"><span class="chip" style="background:var(--m)"></span>코스메카</div>
+    <div class="hcell" style="background:rgba(45,91,138,.15)"><p class="p">27.5%</p></div>
+    <div class="hcell" style="background:rgba(45,91,138,.09)"><p class="p">18.0%</p></div>
+    <div class="hcell" style="background:rgba(45,91,138,.22)"><p class="p">42.0%</p><p class="n">잉글우드랩</p></div>
+  </div>
+  <p class="note" style="margin-top:14px">색이 진할수록 가동률↑. 기타 해외 — 한국콜마 캐나다 22.6% / 코스맥스 광저우 36.9%·인니 28.8%·YATSEN 18.3%. 씨앤씨는 미국 공장 없이 수출 대응. 씨앤씨 국내 세부: 동탄 83.8%·본사(퍼플) 64.5%·용인(그린) 33.8%(신공장 램프업). 한국콜마·코스맥스 미국은 신·증설 초기라 낮음.</p>
+</div>
+
+<div class="seclab">상세 데이터 — 화장품 국내 본체 (천개)</div>
+<div class="card" style="overflow-x:auto">
+  <table class="data">
+    <thead><tr><th>구분</th><th>2023</th><th>2024</th><th>2025</th><th>1Q26</th></tr></thead>
+    <tbody>
+      <tr><td class="grp" style="color:var(--k)">한국콜마㈜</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>생산능력</td><td>373,020</td><td>557,827</td><td>632,474</td><td>163,863</td></tr>
+      <tr><td>생산실적</td><td>360,392</td><td>435,048</td><td>485,888</td><td>127,681</td></tr>
+      <tr><td class="mut">가동률(공시)</td><td class="mut">96.6%</td><td class="mut">78.0%</td><td class="mut">76.8%</td><td class="mut">77.9%</td></tr>
+      <tr><td class="grp" style="color:var(--x)">코스맥스㈜</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>생산능력<span class="mut"> (연환산)</span></td><td>649,723</td><td>780,000</td><td>1,020,508</td><td>1,020,508</td></tr>
+      <tr><td>생산실적</td><td>404,291</td><td>524,549</td><td>590,725</td><td>172,470</td></tr>
+      <tr><td class="mut">가동률(명목)</td><td class="mut">62.2%</td><td class="mut">67.2%</td><td class="mut">57.9%</td><td class="mut">~68%</td></tr>
+      <tr><td class="grp" style="color:var(--c)">씨앤씨(국내)</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>생산능력<span class="mut"> (1교대)</span></td><td>209,000</td><td>260,000</td><td>281,000</td><td>77,000</td></tr>
+      <tr><td>생산실적</td><td>111,000</td><td>148,000</td><td>151,000</td><td>37,000</td></tr>
+      <tr><td class="mut">가동률(명목)</td><td class="mut">53.1%</td><td class="mut">56.9%</td><td class="mut">53.7%</td><td class="mut">48.1%</td></tr>
+      <tr><td class="grp" style="color:var(--m)">코스메카(한국)</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>생산능력<span class="mut"> (주야2교대)</span></td><td>440,225</td><td>456,889</td><td>522,467</td><td>130,141</td></tr>
+      <tr><td>생산실적</td><td>122,774</td><td>164,232</td><td>143,651</td><td>41,165</td></tr>
+      <tr><td class="mut">가동률(명목·주야2교대)</td><td class="mut">27.9%</td><td class="mut">35.9%</td><td class="mut">27.5%</td><td class="mut">31.6%</td></tr>
+      <tr><td class="mut">가동률(1교대 8h 환산)</td><td class="mut">~56%</td><td class="mut">~72%</td><td class="mut">~55%</td><td class="mut">~63%</td></tr>
+    </tbody>
+  </table>
+  <p class="note" style="margin-top:12px">코스맥스 능력은 연환산(1Q26=연간 능력). 씨앤씨는 백만개 단위 공시를 천개로 환산(국내=본사+용인+동탄, 상해 제외). 가동률 — 한국콜마=회사 공시치, 나머지 3사=미공시로 능력÷실적 자체 산출한 명목치. <b style="color:var(--ts)">코스메카 27.5%는 기초·색조를 합산한 가중평균</b>(회사 ‘합계’ 행) — 2025년 기초 25.4%(능력 443천·실적 113천) + 색조 39.3%(능력 79천·실적 31천)이며, 기초가 능력의 85%라 합계가 기초 쪽으로 눌림(색조는 더 높음). ‘1교대 8h 환산’은 주야2교대 능력을 절반(÷2)으로 맞춘 근사. 능력 산출기준이 회사마다 달라 절대수치 직접비교는 지양.</p>
+</div>
+
+<div class="seclab">DART 투자·자산 공시 타임라인 (2023→2026)</div>
+<div class="card">
+  <div class="tlrow"><div class="tldate">2023·10</div><div class="tlbody"><span class="chip" style="background:var(--c)"></span>씨앤씨 — 청주 신공장 토지 취득(양수) <b>270억</b><span class="pill p-non">토지·준비</span></div></div>
+  <div class="tlrow"><div class="tldate">2024·01</div><div class="tlbody"><span class="chip" style="background:var(--x)"></span>코스맥스 — COSMAX USA 현물출자 <b>2,579억</b> (USD 2억)<span class="pill p-str">자본·재무구조</span></div></div>
+  <div class="tlrow"><div class="tldate">2024·02</div><div class="tlbody"><span class="chip" style="background:var(--k)"></span>한국콜마 — ㈜연우 자기주식 <b>440억</b> (지분 →79.98%)<span class="pill p-str">지분정리</span></div></div>
+  <div class="tlrow"><div class="tldate">2025·05</div><div class="tlbody"><span class="chip" style="background:var(--m)"></span>코스메카 — 판교 R&D센터 <b>612억</b> 완공<span class="pill p-non">R&D·비생산</span></div></div>
+  <div class="tlrow"><div class="tldate">2025·08</div><div class="tlbody"><span class="chip" style="background:var(--c)"></span>씨앤씨 — 경영권 변경 계약 체결<span class="pill p-str">지배구조</span></div></div>
+  <div class="tlrow"><div class="tldate">2025·10</div><div class="tlbody"><span class="chip" style="background:var(--c)"></span>씨앤씨 — 제3자배정 유상증자 <b>1,000억</b> (생산시설+타법인)<span class="pill p-str">자본조달</span></div></div>
+  <div class="tlrow"><div class="tldate">2025·12</div><div class="tlbody"><span class="chip" style="background:var(--x)"></span>코스맥스 — 판교 사옥(판교로323) <b>1,175억</b> 취득<span class="pill p-non">사옥·비생산</span></div></div>
+  <div class="tlrow"><div class="tldate">2026·01</div><div class="tlbody"><span class="chip" style="background:var(--k)"></span>한국콜마 — 콜마유엑스, 에치엔지 화장품사업 양수 <b>224억</b><span class="pill p-str">구조재편</span></div></div>
+  <div class="tlrow"><div class="tldate">2026·02</div><div class="tlbody"><span class="chip" style="background:var(--c)"></span>씨앤씨 — 청주공장 신축 <b>790억</b> (생산CAPA 확대)<span class="pill p-capa">생산능력↑</span></div></div>
+  <div class="tlrow"><div class="tldate">2026·05</div><div class="tlbody"><span class="chip" style="background:var(--x)"></span>코스맥스 — 평택 고렴 공장 증축 <b>605억</b><span class="pill p-capa">생산능력↑</span></div></div>
+  <div class="tlrow"><div class="tldate">2026·05</div><div class="tlbody"><span class="chip" style="background:var(--k)"></span>한국콜마 — 이노엔 오송 의약품(고형제) 증설 <b>970억</b><span class="pill p-drug">제약 capa</span></div></div>
+  <div class="tlrow"><div class="tldate">2026·06</div><div class="tlbody"><span class="chip" style="background:var(--m)"></span>코스메카 — 오창공장(토지+건물) 양수 <b>640억</b><span class="pill p-capa">생산능력↑</span></div></div>
+</div>
+
+<div class="seclab">회사별 판단</div>
+<div class="grid ccards">
+  <div class="card cc">
+    <h4><span class="chip" style="background:var(--k)"></span>한국콜마</h4>
+    <p>화장품 본체 가동률 77% 안정. 최근 대형 투자는 <b style="color:var(--ts)">제약(이노엔 970억)·화장품 구조재편(224억)</b> 중심 — 화장품 신규 대형증설 시그널은 아직 없음. ’26.05 공정위 지주회사 적용 제외.</p>
+  </div>
+  <div class="card cc">
+    <h4><span class="chip" style="background:var(--x)"></span>코스맥스</h4>
+    <p>국내능력 ’25 +31% 이미 반영 + <b style="color:var(--ts)">평택 605억 증설(’26.10)</b>로 재확장, capex 지속 우상향. 판교 사옥 1,175억은 생산 무관. 중국·국내가 실적 엔진, 미국은 정상화 중.</p>
+  </div>
+  <div class="card cc">
+    <h4><span class="chip" style="background:var(--c)"></span>씨앤씨인터내셔널</h4>
+    <p>색조(립) 전문 ODM. 1교대 기준 가동률 ~54%(용인 신공장 34% 램프업이 끌어내림). <b style="color:var(--ts)">경영권 변경(’25.08)+유증 1,000억(’25.10)</b>으로 실탄 확보 → <b style="color:var(--ts)">청주 신공장 790억(’26.02)</b> 착공. 매출 flat·영업이익↓, 캐파 선투자 국면.</p>
+  </div>
+  <div class="card cc">
+    <h4><span class="chip" style="background:var(--m)"></span>코스메카</h4>
+    <p>명목 27%는 능력을 넓게 잡은 착시(역대최고도 36%). 물량↓인데 매출 +22%(프리미엄화). 그럼에도 <b style="color:var(--ts)">오창공장 640억 양수(’26.06)</b> → 실질 캐파는 타이트.</p>
+  </div>
+</div>
+
+<footer>
+  <p><b>데이터 출처</b> · 금융감독원 전자공시(DART) OpenDART — 4사 FY2025 사업보고서, 2026년 1분기 분기보고서, 수시공시(유형자산 양수/취득·신규시설투자·영업양수·타법인주식취득·유상증자 등). 조회기간 2023.10~2026.07.</p>
+  <p><b>방법론</b> · 가동률: 한국콜마는 사업보고서 공시 “평균가동률(%)”, 코스맥스·씨앤씨·코스메카는 미공시로 생산실적÷생산능력을 자체 산출한 <b>명목</b> 수치. 능력 산출기준이 회사마다 달라(콜마 8h·2조2교대 / 코스맥스 8h·3교대·연환산 / 씨앤씨 8h·1교대 / 코스메카 시간미기재·주야2교대) 절대수치 직접비교는 지양 — 실제 도달 최고치(콜마 96.6%/코스맥스 67.2%/씨앤씨 56.9%/코스메카 35.9%)가 정의 차이를 보여줌. capex는 연결현금흐름표 “유형자산의 취득”. 공시금액은 부가세·부대비용 제외 계약금액.</p>
+  <p><b>유의</b> · 투자정보 참고용이며 투자권유가 아님. 공시 금액·일정은 정정·변동될 수 있음. 생성일 2026-07-01.</p>
+</footer>
+
+</div>
+
+<script>
+var DATA = {
+  labels:['2023','2024','2025'],
+  util:{k:[96.6,78.0,76.8],x:[62.2,67.2,57.9],m:[27.9,35.9,27.5],c:[53.1,56.9,53.7]},
+  capa:{k:[373,558,632],x:[650,780,1021],m:[440,457,522],c:[209,260,281]},
+  capex:{k:[1068,2472,1640],x:[863,1649,1870],m:[186,487,614],c:[192,343,152]},
+  turnover:{k:[3.33,3.09,3.09],x:[3.25,2.78,2.59],m:[3.07,2.67,2.68],c:[2.49,2.46,2.35]},
+  growth:{labels:['한국콜마','코스맥스','코스메카','씨앤씨'],rev:[26.6,34.9,36.2,30.9],asset:[36.6,69.3,56.1,38.6]},
+  invturn:{k:[7.8,7.6,8.6],x:[8.1,8.4,8.9],m:[7.2,7.8,8.1],c:[8.3,8.3,9.9]},
+  prov:{labels:['한국콜마','코스맥스','코스메카','씨앤씨'],vals:[0.15,0.39,0.16,0.01]},
+  rnd:{k:[5.79,5.57,5.58],x:[5.24,4.80,5.70],m:[2.80,2.60,2.60],c:[1.93,2.20,1.67]},
+  rndAdj:{labels:['한국콜마','코스맥스','코스메카','씨앤씨'],vals:[4.0,5.7,2.6,1.7]},
+  opm:{k:[6.3,7.9,8.8,10.8],x:[6.5,8.1,8.2,7.8],m:[10.4,11.5,13.0,11.8],c:[14.6,10.2,7.7,4.2]},
+  invAllow:{labels:['한국콜마','코스맥스','코스메카','씨앤씨'],vals:[9.3,4.8,12.8,1.5]},
+  revPerHead:{labels:['한국콜마','코스맥스','코스메카','씨앤씨'],vals:[222,270,258,96]},
+  meccaMat:{labels:['2021','2022','2023','2024','2025'],mat:[12.8,12.2,9.8,9.2,8.3],raw:[7.0,6.4,5.3,5.7,4.7]},
+  meccaQ:{labels:['1Q25','2Q25','3Q25','4Q25','1Q26'],raw:[53.8,59.6,71.4,66.2,93.3],sub:[85.5,86.1,105.2,121.3,161.4]}
+};
+var charts={};
+function palette(dark){return dark
+  ?{k:'#5B9DD6',x:'#3FB0B0',m:'#D8A542',c:'#9E85CE',grid:'#2A333E',ink:'#7C8894'}
+  :{k:'#2D5B8A',x:'#1F7F7F',m:'#C0851A',c:'#6B4E9E',grid:'#EEF1F5',ink:'#64707E'};}
+function buildCharts(){
+  var dark=document.body.classList.contains('dark');
+  var C=palette(dark);
+  Chart.defaults.color=C.ink; Chart.defaults.font.family='inherit'; Chart.defaults.font.size=12;
+  Object.values(charts).forEach(function(c){c.destroy();});
+  function opt(suffix){return{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+c.formattedValue+(suffix||'');}}}},
+    scales:{y:{beginAtZero:true,grid:{color:C.grid},border:{display:false},ticks:{callback:function(v){return v+(suffix||'');}}},x:{grid:{display:false}}}};}
+  function line(id,d,suffix){return new Chart(document.getElementById(id),{type:'line',data:{labels:DATA.labels,datasets:[
+    {label:'한국콜마',data:d.k,borderColor:C.k,backgroundColor:C.k,pointStyle:'circle',pointRadius:4,borderWidth:2,tension:.25},
+    {label:'코스맥스',data:d.x,borderColor:C.x,backgroundColor:C.x,pointStyle:'rectRot',pointRadius:5,borderWidth:2,tension:.25},
+    {label:'코스메카',data:d.m,borderColor:C.m,backgroundColor:C.m,pointStyle:'triangle',pointRadius:5,borderWidth:2,borderDash:[6,3],tension:.25},
+    {label:'씨앤씨',data:d.c,borderColor:C.c,backgroundColor:C.c,pointStyle:'rect',pointRadius:4,borderWidth:2,borderDash:[2,2],tension:.25}
+  ]},options:opt(suffix)});}
+  charts.util=line('utilChart',DATA.util,'%');
+  charts.capex=line('capexChart',DATA.capex,'');
+  charts.capa=new Chart(document.getElementById('capaChart'),{type:'bar',data:{labels:DATA.labels,datasets:[
+    {label:'한국콜마',data:DATA.capa.k,backgroundColor:C.k,borderRadius:3,maxBarThickness:18},
+    {label:'코스맥스',data:DATA.capa.x,backgroundColor:C.x,borderRadius:3,maxBarThickness:18},
+    {label:'코스메카',data:DATA.capa.m,backgroundColor:C.m,borderRadius:3,maxBarThickness:18},
+    {label:'씨앤씨',data:DATA.capa.c,backgroundColor:C.c,borderRadius:3,maxBarThickness:18}
+  ]},options:opt('')});
+  charts.turnover=line('turnoverChart',DATA.turnover,'배');
+  charts.growth=new Chart(document.getElementById('growthChart'),{type:'bar',data:{labels:DATA.growth.labels,datasets:[
+    {label:'매출 성장',data:DATA.growth.rev,backgroundColor:'#2D5B8A',borderRadius:3,maxBarThickness:26},
+    {label:'유형자산 성장',data:DATA.growth.asset,backgroundColor:'#C0851A',borderRadius:3,maxBarThickness:26}
+  ]},options:opt('%')});
+  charts.invturn=line('invturnChart',DATA.invturn,'배');
+  charts.rnd=line('rndChart',DATA.rnd,'%');
+  charts.rndAdj=new Chart(document.getElementById('rndAdjChart'),{type:'bar',data:{labels:DATA.rndAdj.labels,datasets:[{label:'화장품 순수 R&D%',data:DATA.rndAdj.vals,backgroundColor:[C.k,C.x,C.m,C.c],borderRadius:4,maxBarThickness:44}]},options:opt('%')});
+  charts.opm=new Chart(document.getElementById('opmChart'),{type:'line',data:{labels:['2023','2024','2025','1Q26'],datasets:[
+    {label:'한국콜마',data:DATA.opm.k,borderColor:C.k,backgroundColor:C.k,pointStyle:'circle',pointRadius:4,borderWidth:2,tension:.25},
+    {label:'코스맥스',data:DATA.opm.x,borderColor:C.x,backgroundColor:C.x,pointStyle:'rectRot',pointRadius:5,borderWidth:2,tension:.25},
+    {label:'코스메카',data:DATA.opm.m,borderColor:C.m,backgroundColor:C.m,pointStyle:'triangle',pointRadius:5,borderWidth:2,borderDash:[6,3],tension:.25},
+    {label:'씨앤씨',data:DATA.opm.c,borderColor:C.c,backgroundColor:C.c,pointStyle:'rect',pointRadius:4,borderWidth:2,borderDash:[2,2],tension:.25}
+  ]},options:opt('%')});
+  charts.invAllow=new Chart(document.getElementById('invAllowChart'),{type:'bar',data:{labels:DATA.invAllow.labels,datasets:[{label:'재고충당비율',data:DATA.invAllow.vals,backgroundColor:[C.k,C.x,C.m,C.c],borderRadius:4,maxBarThickness:44}]},options:opt('%')});
+  charts.costStruct=new Chart(document.getElementById('costStructChart'),{type:'bar',data:{labels:['코스메카','한국콜마','코스맥스','씨앤씨'],datasets:[
+    {label:'원재료',data:[51.4,48.6,49.9,54.0],backgroundColor:'#9AA4B0'},
+    {label:'인건비',data:[11.0,14.2,15.1,28.5],backgroundColor:'#C0851A'},
+    {label:'기타',data:[24.6,28.4,26.8,9.8],backgroundColor:'#D3D9E1'},
+    {label:'영업이익',data:[13.0,8.8,8.2,7.7],backgroundColor:'#117A52'}
+  ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+c.formattedValue+'%';}}}},scales:{x:{stacked:true,max:100,grid:{color:C.grid},border:{display:false},ticks:{callback:function(v){return v+'%';}}},y:{stacked:true,grid:{display:false}}}}});
+  charts.opmSep=new Chart(document.getElementById('opmSepChart'),{type:'bar',data:{labels:['코스메카','한국콜마','코스맥스','씨앤씨'],datasets:[
+    {label:'별도(국내)',data:[12.5,14.9,9.0,1.8],backgroundColor:'#9AA4B0',borderRadius:3,maxBarThickness:24},
+    {label:'연결',data:[11.8,10.8,7.8,4.2],backgroundColor:'#117A52',borderRadius:3,maxBarThickness:24}
+  ]},options:opt('%')});
+  charts.prov=new Chart(document.getElementById('provChart'),{type:'bar',data:{labels:DATA.prov.labels,datasets:[
+    {label:'충당부채율',data:DATA.prov.vals,backgroundColor:[C.k,C.x,C.m,C.c],borderRadius:3,maxBarThickness:46}
+  ]},options:opt('%')});
+  charts.revHead=new Chart(document.getElementById('revHeadChart'),{type:'bar',data:{labels:DATA.revPerHead.labels,datasets:[{label:'인당매출(백만원/분기)',data:DATA.revPerHead.vals,backgroundColor:[C.k,C.x,C.m,C.c],borderRadius:4,maxBarThickness:44}]},options:opt('')});
+  charts.meccaMat=new Chart(document.getElementById('meccaMatChart'),{type:'line',data:{labels:DATA.meccaMat.labels,datasets:[
+    {label:'재료/매출',data:DATA.meccaMat.mat,borderColor:'#C0851A',backgroundColor:'#C0851A',pointStyle:'triangle',pointRadius:4,borderWidth:2,tension:.25},
+    {label:'원재료/매출',data:DATA.meccaMat.raw,borderColor:'#9AA4B0',backgroundColor:'#9AA4B0',pointStyle:'rect',pointRadius:4,borderWidth:2,borderDash:[4,3],tension:.25}
+  ]},options:opt('%')});
+  charts.meccaQ=new Chart(document.getElementById('meccaQChart'),{type:'bar',data:{labels:DATA.meccaQ.labels,datasets:[
+    {label:'원재료',data:DATA.meccaQ.raw,backgroundColor:'#9AA4B0',borderRadius:3,maxBarThickness:40},
+    {label:'부재료',data:DATA.meccaQ.sub,backgroundColor:'#C0851A',borderRadius:3,maxBarThickness:40}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+c.formattedValue+'억';}}}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true,grid:{color:C.grid},border:{display:false},ticks:{callback:function(v){return v+'억';}}}}}});
+}
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  var dark=document.body.classList.contains('dark');
+  document.getElementById('themeBtn').textContent=dark?'◑ 라이트':'◐ 다크';
+  try{localStorage.setItem('odm_theme',dark?'dark':'light');}catch(e){}
+  buildCharts();
+}
+(function init(){
+  var saved=null; try{saved=localStorage.getItem('odm_theme');}catch(e){}
+  var dark = saved ? saved==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  if(dark){document.body.classList.add('dark');document.getElementById('themeBtn').textContent='◑ 라이트';}
+  buildCharts();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# ── GitHub Pages 공개용: 정적 대시보드 파일만 허용, 그 외 전부 무시 ──
+# (민감정보 .deploy.env/.dart.env, 소스 .py, 데이터원본 .json/.csv 원천 차단)
+/*
+!.gitignore
+!README.md
+!index.html
+!data.js
+!fin.js
+!amazon.js
+!momentum.html
+!odm-deep.html
